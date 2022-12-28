@@ -1,0 +1,15 @@
+{
+  "name": "xrbot---discord",
+  "version": "1.0.0",
+  "description": "Xrbot discord bot in Discord.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ItsXrgon",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "14.7.1",
+    "dotenv": "16.0.3"
+  }
+}
