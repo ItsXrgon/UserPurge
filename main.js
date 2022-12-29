@@ -52,6 +52,11 @@ for (const file of eventFiles) {
 	}
 }
 
+client.on("message", (message) => {
+    if (message.content.substring(0, 1) === "!") {
+        message.channel.send("Hello from AI bot"); //reply if message has "!" as first character
+    }
+});
 
 // Log in to Discord with your client's token
 client.login(token);
