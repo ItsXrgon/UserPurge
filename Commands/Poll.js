@@ -1,5 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Events } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -10,6 +9,11 @@ module.exports = {
 				.setName('title')
 				.setDescription('Question of poll')
 				.setRequired(true))
+        .addIntegerOption(option =>
+            option
+                .setName('duration')
+                .setDescription('Duration of poll in hours (less than 7 days & 24h if not selected)')
+                .setRequired(false))
         .addStringOption(option =>
             option
                 .setName('option1')
@@ -62,26 +66,65 @@ module.exports = {
                 .setRequired(false)),
 
 	async execute(interaction) {
-        let options = [];
+
+        let options = [];   // Collect options from slash command input
         let option = interaction.options.getString("option1");
-        for(i=2; option != null; i++) {
-            options.push(option);
+        for(i=2; option != null; i++) { 
+            options.push([option,0]);
             option = interaction.options.getString(`option${i}`);
         }
-        numbers = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
-        let buttons = new ActionRowBuilder();
-        for(let i=1; i<options.length+1; i++) {
-            buttons.addComponents(
+
+        //  Setup buttons to add to poll msg
+        numbers = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+        let buttons1 = new ActionRowBuilder();
+        let buttons2 = new ActionRowBuilder();
+        for(let i=0; i<options.length; i++) {
+            if(i<5){
+                buttons1.addComponents(
                         new ButtonBuilder()
-                            .setCustomId(`option ${i}`)
+                            .setCustomId(`option ${i+1}`)
                             .setLabel("Option " + numbers[i])
                             .setStyle(ButtonStyle.Primary),
                     );
+            } else {
+                buttons2.addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`option ${i+1}`)
+                        .setLabel("Option " + numbers[i])
+                        .setStyle(ButtonStyle.Primary),
+                );
+            }    
         }
-        text = "**" + interaction.options.getString("title") + "**";
+
+        //  Formatting poll msg
+        text = "";
         for(let i=0; i<options.length; i++) {
-            text += '\n'+ (i+1) +'- '+options[i];
+            text += `\n${(i+1)} - ${options[1][0]}   -   [ ${options[i][1]} ]`;
         }
-        await interaction.reply({ content: text, components: [buttons] });
+        const Embed = new EmbedBuilder()
+            .setColor(0x0099FF)
+            .setTitle("**" + interaction.options.getString("title") + "**")
+            .setDescription(text)
+            .setFooter({ text: `Poll created by: ${interaction.user.username }`})
+            .setTimestamp()
+
+        await interaction.reply({ embeds: [Embed], components: [buttons1] }); //    Poll :D
+
+
+        //  Setup collector for poll votes
+        let time = interaction.options.getInteger("time")*3600000;
+        if(time > 604800000) { //  If inputted duration is above 7 days, lower it to 7 days
+            time = 604800000;
+        }
+
+        const collector = message.channel.createMessageComponentCollector({
+            time: time // The amount of time the collector is valid for in milliseconds
+        });
+
+
+        
+        collector.on("collect", (interaction) => {
+            interaction.reply("Clicked!"); // Run a piece of code when the user clicks on the button
+        });
 	},
 };
