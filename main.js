@@ -15,11 +15,11 @@ client.player = new Player(client, {
 })
 
 
-const commandsPath = path.join(__dirname, 'Commands');
+const commandsPath = path.resolve(__dirname, 'Commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-	const filePath = path.join(commandsPath, file);
+	const filePath = path.resolve(commandsPath, file);
 	const command = require(filePath);
 	// Set a new item in the Collection with the key as the command name and the value as the exported module
 	if ('data' in command && 'execute' in command) {
@@ -47,11 +47,11 @@ client.on(Events.InteractionCreate, async interaction => {
 	}
 });
 
-const eventsPath = path.join(__dirname, 'Events');
+const eventsPath = path.resolve(__dirname, 'Events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
-	const filePath = path.join(eventsPath, file);
+	const filePath = path.resolve(eventsPath, file);
 	const event = require(filePath);
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(...args));
@@ -59,12 +59,6 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
-
-client.on("message", (message) => {
-    if (message.content.substring(0, 1) === "!") {
-        message.channel.send("Hello from AI bot"); //reply if message has "!" as first character
-    }
-});
 
 // Log in to Discord with your client's token
 client.login(token);

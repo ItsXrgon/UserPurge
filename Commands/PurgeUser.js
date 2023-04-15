@@ -1,19 +1,21 @@
-'use strict';
-
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('PurgeUser')
+		.setName('purgeuser')
 		.setDescription('Deletes ALL messages of a user.')
-		.addUserOption(option => option.setName('user').setDescription('The user to delete msgs of').setRequired(true)),
+		.addUserOption(option => option.setName('user').setDescription('The user to delete msgs of').setRequired(true))
+        .addChannelOption(option => option.setName('channel').setDescription('The channel to delete msgs from').setRequired(true)),
 
-	async execute(interaction) {
+	async execute(interaction, client) {
 
 		const user = interaction.options.getUser('user');
+        const channel = interaction.options.getChannel('channel');
+
+
+
         
         async function fetchAllMessages() {
-            const channel = client.channels.cache.get("1006988314563334163");
             let messages = [];
             // Create message pointer
             let message = await channel.messages.fetch({
@@ -35,11 +37,14 @@ module.exports = {
         const allMessages = await fetchAllMessages();
         for (let i = 0; i < allMessages.length; i++) {
             const msg = allMessages[i];
-            if (msg.author.id === authorIdToDelete) {
-            await new Promise(resolve => setTimeout(resolve, 80));
-            await msg.delete();
-            console.log(`Deleted ${i + 1} messages.`);
-            }
+            setTimeout(() => {
+                try{      
+                    msg.delete();
+                    console.log(`Deleted ${i + 1} messages. ${msg.content}.`);
+                } catch(DiscordAPIError) {
+                    console.log(`Couldnt delete message ${msg.content}`)
+                }
+            }, 20);
         }
     }
 }
