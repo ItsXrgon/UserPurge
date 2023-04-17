@@ -10,8 +10,6 @@ module.exports = {
 
 	async execute(interaction) {
 
-        await interaction.deferReply({ ephemeral: true }); // let Discord know we will respond later
-
         if (!interaction.member.permissions.has('MANAGE_MESSAGES')) {
             return interaction.reply({ content: 'You do not have permission to use this command', ephemeral: true });
         }
@@ -22,6 +20,8 @@ module.exports = {
         if (!user || !channel) {
             return interaction.reply({ content: 'User or Channel not found', ephemeral: true });
         }
+
+        await interaction.deferReply({ ephemeral: true }); // let Discord know we will respond later
 
         /**
          *  Recursive function to delete all messages from a user given the starting point
@@ -42,7 +42,6 @@ module.exports = {
             })
 
             if(allMessages.length === 0 || startingMessage === null) { // If end of channel reached, stop recursion
-                await nextStartingMessage.delete();
                 return;
             }
 
