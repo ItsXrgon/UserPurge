@@ -1,1 +1,2 @@
-# Xrbot---Discord.js
+# UserPurge bot
+
