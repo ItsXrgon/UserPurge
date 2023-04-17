@@ -8,7 +8,7 @@ module.exports = {
 		.addUserOption(option => option.setName('user').setDescription('The user to delete msgs of').setRequired(true))
         .addChannelOption(option => option.setName('channel').setDescription('The channel to delete msgs from').setRequired(true)),
 
-	async execute(interaction,) {
+	async execute(interaction) {
 
         await interaction.deferReply({ ephemeral: true }); // let Discord know we will respond later
 
@@ -16,61 +16,66 @@ module.exports = {
             return interaction.reply({ content: 'You do not have permission to use this command', ephemeral: true });
         }
 
-		const user = interaction.options.getUser('user');
+        const user = interaction.options.getUser('user');
         const channel = interaction.options.getChannel('channel');
 
         if (!user || !channel) {
             return interaction.reply({ content: 'User or Channel not found', ephemeral: true });
         }
 
-        // Fetch message pointer to start from initially 
-        startingMessage = await channel.messages.fetch({
-            limit: 1
-        })
-
-        await deleteMessages(startingMessage) 
-
         /**
          *  Recursive function to delete all messages from a user given the starting point
-         * @param {Message} startingMessage 
-         * 
-         */
+        */
         async function deleteMessages(startingMessage) {
 
-            const allMessages = [startingMessage].concat(await channel.messages.fetch({
-                limit: 100, // EDIT THIS IF YOU WANNA CHANGE BATCH SIZE
-                after: startingMessage.id // starting point of messages we're getting
-            }));
+            const allMessages = [];
 
-            if(allMessages.length === 0) { // If end of channel reached, stop recursion
-                return
+            let nextStartingMessage;
+
+            await channel.messages
+            .fetch({ limit: 100, before: startingMessage.id })
+            .then(messagePage => {
+                messagePage.forEach(msg => allMessages.push(msg));
+
+                // Update our message pointer to be last message in page of messages
+                nextStartingMessage = 0 < messagePage.size ? messagePage.at(messagePage.size - 1) : null;
+            })
+
+            if(allMessages.length === 0 || startingMessage === null) { // If end of channel reached, stop recursion
+                await nextStartingMessage.delete();
+                return;
             }
 
             if(startingMessage.author.id === user.id) { // If starting message author was user, delete it
-                await startingMessage.delete();
+                startingMessage.delete();
             } 
 
-            const nextStartingMessage =  allMessages.pop() // Removes last element since its next starting point so dont delete it
+            const userMessages = allMessages.filter(msg => msg.author.id === user.id); // Filter messages authored by user
 
-            userMessages = allMessages.filter(msg => msg.author.id === user.id); // Filter messages authored by user
-
-            for (let i = 0; i < userMessages; i++) { // Delete all messages by user in the batch
+            for (let i = 0; i < userMessages.length-1; i++) { // Delete all messages by user in the batch
                 const msg = userMessages[i]; 
                 setTimeout(async () => {
-                    try{      
+                    try{
                         await msg.delete();
-                        console.log(`Deleted ${i + 1} messages. ${msg.content}.`);
                     } catch(DiscordAPIError) {
                         console.log(`Couldnt delete message ${msg.content}`)
                     }
-                }, 80);
+                }, 20);
             }
 
-            deleteMessages(nextStartingMessage)
+            await deleteMessages(nextStartingMessage);
 
         }
+
+        // Fetch message pointer to start from initially 
+        const messages = await channel.messages.fetch({ limit: 1 });
+        if (messages.size === 0) {
+            return interaction.reply({ content: 'No messages found in channel', ephemeral: true });
+        }
+        const startingMessage = messages.first();
+
+        await deleteMessages(startingMessage);
 
         await interaction.editReply(`Deleting!`);
     }
 }
-
