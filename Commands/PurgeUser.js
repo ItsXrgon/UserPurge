@@ -49,14 +49,15 @@ module.exports = {
                 startingMessage.delete();
             } 
 
-            const userMessages = allMessages.filter(msg => msg.author.id === user.id); // Filter messages authored by user
+            let userMessages = allMessages.filter(msg => msg.author.id === user.id); // Filter messages authored by user
 
-            for (let i = 0; i < userMessages.length-1; i++) { // Delete all messages by user in the batch
+            for (let i = 0; i < userMessages.length; i++) { // Delete all messages by user in the batch
                 const msg = userMessages[i]; 
                 setTimeout(async () => {
                     try{
-                        console.log(msg.content)
-                        await msg.delete();
+                        if(!(msg.id == nextStartingMessage.id)) {
+                            await msg.delete()
+                        };
                     } catch(DiscordAPIError) {
                         console.log(`Couldnt delete message ${msg.content}`)
                     }
