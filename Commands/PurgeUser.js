@@ -71,7 +71,7 @@ module.exports = {
         // Fetch message pointer to start from initially 
         const messages = await channel.messages.fetch({ limit: 1 });
         if (messages.size === 0) {
-            return interaction.reply({ content: 'No messages found in channel', ephemeral: true });
+            return interaction.editReply({ content: 'No messages found in channel', ephemeral: true });
         }
         const startingMessage = messages.first();
 
