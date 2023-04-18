@@ -41,27 +41,27 @@ module.exports = {
                 nextStartingMessage = 0 < messagePage.size ? messagePage.at(messagePage.size - 1) : null;
             })
 
+            if(startingMessage != null && startingMessage.author.id === user.id) { // If starting message exits & author was user, delete it
+                startingMessage.delete();
+            } 
+
             if(allMessages.length === 0 || startingMessage === null) { // If end of channel reached, stop recursion
                 return;
             }
 
-            if(startingMessage.author.id === user.id) { // If starting message author was user, delete it
-                startingMessage.delete();
-            } 
-
-            let userMessages = allMessages.filter(msg => msg.author.id === user.id); // Filter messages authored by user
+            const userMessages = allMessages.filter(msg => msg.author.id === user.id); // Filter messages authored by user
 
             for (let i = 0; i < userMessages.length; i++) { // Delete all messages by user in the batch
                 const msg = userMessages[i]; 
                 setTimeout(async () => {
                     try{
-                        if(!(msg.id == nextStartingMessage.id)) {
+                        if(!(msg.id == nextStartingMessage.id)) { // Not to delete next starting message if its authored by user
                             await msg.delete()
                         };
                     } catch(DiscordAPIError) {
                         console.log(`Couldnt delete message ${msg.content}`)
                     }
-                }, 20);
+                }, 20); // 50 requests per second ---> 1 request every 20 milliseconds
             }
 
             await deleteMessages(nextStartingMessage);
