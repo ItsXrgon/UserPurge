@@ -55,6 +55,7 @@ module.exports = {
                 const msg = userMessages[i]; 
                 setTimeout(async () => {
                     try{
+                        console.log(msg.content)
                         await msg.delete();
                     } catch(DiscordAPIError) {
                         console.log(`Couldnt delete message ${msg.content}`)

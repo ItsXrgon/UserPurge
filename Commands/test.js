@@ -12,7 +12,7 @@ module.exports = {
         }
         
         await interaction.deferReply({ ephemeral: true }); // let Discord know we will respond later
-		// Send messages in batches of 100 with a delay of 2000ms between them
+		// Send messages in batches of 100 with a delay of 20ms between them
 		for (let i = 0; i < 10; i++) {
 			for (let j = 0; j < 100; j++) {
 				setTimeout(async () => {
