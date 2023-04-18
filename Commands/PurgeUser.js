@@ -4,9 +4,9 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('purgeuser')
-		.setDescription('Deletes ALL messages of a user.')
-		.addUserOption(option => option.setName('user').setDescription('The user to delete msgs of').setRequired(true))
-        .addChannelOption(option => option.setName('channel').setDescription('The channel to delete msgs from').setRequired(true)),
+		.setDescription('Deletes all messages of a user in the selected channel.')
+		.addUserOption(option => option.setName('user').setDescription('User to delete msgs of').setRequired(true))
+        .addChannelOption(option => option.setName('channel').setDescription('Channel to delete msgs in').setRequired(true)),
 
 	async execute(interaction) {
 
